@@ -151,9 +151,9 @@ def fetch(bot, initial=False):
 	}
 
 	if 'nodes_last_modified' in bot.memory['ffka']:
-		headers['If-Modified-Since'] = bot.memory['ffka']['nodes_last_modified']
+		headers['If-Modified-Since'] = bot.memory['ffka']['alfred_last_modified']
 
-	result = requests.get(bot.config.freifunk.nodes_uri, headers=headers)
+	result = requests.get(bot.config.freifunk.alfred_uri, headers=headers)
 
 	if result.status_code == 304:
 		# no update since last fetch
@@ -161,7 +161,7 @@ def fetch(bot, initial=False):
 
 	if result.status_code != 200:
 		# err, we have a problem!
-		print('Unable to get nodes.json! Status code: {:d}'.format(alfred.status_code))
+		print('Unable to get alfred.json! Status code: {:d}'.format(result.status_code))
 		return
 
 	try:
@@ -172,7 +172,7 @@ def fetch(bot, initial=False):
 		return
 
 	# No problems? Everything fine? Update last modified timestamp!
-	bot.memory['ffka']['nodes_last_modified'] = result.headers['Last-Modified']
+	bot.memory['ffka']['alfred_last_modified'] = result.headers['Last-Modified']
 
 	session = session_maker_instance()
 

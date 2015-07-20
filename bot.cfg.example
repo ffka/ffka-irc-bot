@@ -24,4 +24,4 @@ db_path = ffxx.db
 channel = #ffxx
 change_no_announce = clientcount
 change_announce_target = #ffxx-changes
-nodes_uri = link_to_your_alfred_merged.json
+alfred_uri = link_to_your_alfred_merged.json
