@@ -1,0 +1,27 @@
+[core]
+nick = botnick
+user = ident
+name = fullname
+
+host = irc.hackint.org
+port = 9999
+use_ssl = True
+verify_ssl = False
+
+owner = botowner
+admins = list,of,admins
+
+channels = #ffxx,ffxx-changes
+
+enable = ff-nodeinfo_alfred, reload
+
+extra = modules/
+logdir = log/
+pid_dir = .
+
+[freifunk]
+db_path = ffxx.db
+channel = #ffxx
+change_no_announce = clientcount
+change_announce_target = #ffxx-changes
+nodes_uri = link_to_your_alfred_merged.json
