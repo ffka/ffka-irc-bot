@@ -8,6 +8,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import inspect
 import datetime
+import math
 import json
 import requests
 
@@ -191,9 +192,30 @@ def fetch(bot, initial=False):
 				bot.msg(bot.config.freifunk.channel, 'Neuer Knoten: {:s}'.format(str(node)))
 
 			for node in session.dirty:
-				for attr in inspect(node).attrs:
+				attrs = inspect(node).attrs
+				location_updated = False
+
+				for attr in attrs:
 					if attr.key not in bot.config.freifunk.get_list('change_no_announce') and attr.history.has_changes():
-						bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(str(node.name), str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
+						if attr.key == 'online':
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(str(node.name), 'online' if attr.value else 'offline'))
+						elif attr.key == 'lat' or attr.key == 'lon':
+							if not location_updated:
+								location_updated = True
+
+								if attrs.lat.history.has_changes():
+									old_lat = attrs.lat.history.deleted[0]
+								else:
+									old_lat = attrs.lat.value
+
+								if attrs.lon.history.has_changes():
+									old_lon = attrs.lon.history.deleted[0]
+								else:
+									old_lon = attrs.lon.value
+
+								bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte seine Position um {:.0f} Meter: http://www.ffka.net/map/geomap.html?lat={:.4f}&lon={:.4f}'.format(str(node.name), calc_distance(old_lat, old_lon, attrs.lat.value, attrs.lon.value), attrs.lat.value, attrs.lon.value))
+						else:
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(str(node.name), str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 
 		try:
 			session.commit()
@@ -202,3 +224,19 @@ def fetch(bot, initial=False):
 			raise
 		finally:
 			session.close()
+
+def calc_distance(lat1, long1, lat2, long2):
+	# http://www.johndcook.com/blog/python_longitude_latitude/
+    degrees_to_radians = math.pi/180.0
+
+    phi1 = (90.0 - lat1)*degrees_to_radians
+    phi2 = (90.0 - lat2)*degrees_to_radians
+
+    theta1 = long1*degrees_to_radians
+    theta2 = long2*degrees_to_radians
+        
+    cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) + 
+           math.cos(phi1)*math.cos(phi2))
+    arc = math.acos( cos )
+
+    return arc * 6378137 
