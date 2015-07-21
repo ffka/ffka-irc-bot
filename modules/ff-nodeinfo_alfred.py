@@ -198,7 +198,7 @@ def fetch(bot, initial=False):
 				for attr in attrs:
 					if attr.key not in bot.config.freifunk.get_list('change_no_announce') and attr.history.has_changes():
 						if attr.key == 'online':
-							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(str(node.name), 'online' if attr.value else 'offline'))
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F ist nun {:s}\x0F'.format(str(node.name), '\x0303online' if attr.value else '\x0305offline'))
 						elif attr.key == 'lat' or attr.key == 'lon':
 							if not location_updated:
 								location_updated = True
@@ -213,9 +213,9 @@ def fetch(bot, initial=False):
 								else:
 									old_lon = attrs.lon.value
 
-								bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte seine Position um {:.0f} Meter: http://www.ffka.net/map/geomap.html?lat={:.4f}&lon={:.4f}'.format(str(node.name), calc_distance(old_lat, old_lon, attrs.lat.value, attrs.lon.value), attrs.lat.value, attrs.lon.value))
+								bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F änderte seine Position um {:.0f} Meter: {:s}?lat={:.4f}&lon={:.4f}'.format(str(node.name), calc_distance(old_lat, old_lon, attrs.lat.value, attrs.lon.value), bot.config.freifunk.map_uri, attrs.lat.value, attrs.lon.value))
 						else:
-							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(str(node.name), str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F änderte {:s} von {:s} zu {:s}'.format(str(node.name), str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 
 		try:
 			session.commit()
