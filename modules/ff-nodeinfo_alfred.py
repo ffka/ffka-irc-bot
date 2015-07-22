@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import willie
+from willie import formatting
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -77,15 +78,16 @@ class Node(Base):
 
 	def __str__(self):
 		if self.hostname:
-			out = '\x0304{0:s}\x0F'.format(self.hostname)
+			out = formatting.color(self.hostname, formatting.colors.RED)
 		else:
-			out = '\x0304{0:s}\x0F'.format(self.node_id)
+			out = formatting.color(self.node_id, formatting.colors.RED)
 
 		if self.hardware:
-			out += ', \x0303{0:s}\x0F'.format(self.hardware)
+			out += formatting.color(self.hardware, formatting.colors.GREEN)
 
 		if self.firmware_base and self.firmware_release:
-			out += ', \x0306{0:s}/{1:s}\x0F'.format(self.firmware_base, self.firmware_release)
+			out += ', {:s}'.format(formatting.color('{0:s}/{1:s}'.format(
+				self.firmware_base, self.firmware_release), formatting.colors.PURPLE))
 
 		if self.lat and self.lon:
 			out += ', http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(self.lat, self.lon)
@@ -198,7 +200,10 @@ def fetch(bot, initial=False):
 				for attr in attrs:
 					if attr.key not in bot.config.freifunk.get_list('change_no_announce') and attr.history.has_changes():
 						if attr.key == 'online':
-							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F ist nun {:s}\x0F'.format(str(node.name), '\x0303online' if attr.value else '\x0305offline'))
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(
+								formatting.color(str(node.name), formatting.colors.WHITE), 
+								formatting.color('online', formatting.colors.GREEN) 
+								if attr.value else formatting.color('offline', formatting.colors.RED)))
 						elif attr.key == 'lat' or attr.key == 'lon':
 							if not location_updated:
 								location_updated = True
@@ -213,9 +218,15 @@ def fetch(bot, initial=False):
 								else:
 									old_lon = attrs.lon.value
 
-								bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F änderte seine Position um {:.0f} Meter: {:s}?lat={:.4f}&lon={:.4f}'.format(str(node.name), calc_distance(old_lat, old_lon, attrs.lat.value, attrs.lon.value), bot.config.freifunk.map_uri, attrs.lat.value, attrs.lon.value))
+								bot.msg(bot.config.freifunk.change_announce_target, 
+									'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}?lat={:.4f}&lon={:.4f}'.format(
+									formatting.color(str(node.name), formatting.colors.WHITE), calc_distance(
+										old_lat, old_lon, attrs.lat.value, attrs.lon.value), 
+									bot.config.freifunk.map_uri, attrs.lat.value, attrs.lon.value))
 						else:
-							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten \x0300{:s}\x0F änderte {:s} von {:s} zu {:s}'.format(str(node.name), str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
+							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
+								formatting.color(str(node.name), formatting.colors.WHITE), 
+								str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 
 		try:
 			session.commit()
