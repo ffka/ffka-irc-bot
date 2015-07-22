@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import willie
 from willie import formatting
+from willie.module import commands, rate, interval
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -129,8 +129,8 @@ def shutdown(bot):
 	finally:
 		session.close()
 
-@willie.module.rate(10)
-@willie.module.commands('s', 'status')
+@rate(10)
+@commands('s', 'status')
 def status(bot, trigger):
 	global session_maker_instance
 
@@ -145,7 +145,7 @@ def status(bot, trigger):
 
 	bot.say('Online: {:d} Nodes und {:d} Clients'.format(nodes, clients))
 
-@willie.module.interval(30)
+@interval(30)
 def fetch(bot, initial=False):
 	global session_maker_instance
 
