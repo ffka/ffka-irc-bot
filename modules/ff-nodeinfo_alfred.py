@@ -83,7 +83,7 @@ class Node(Base):
 			out = formatting.color(self.node_id, formatting.colors.RED)
 
 		if self.hardware:
-			out += formatting.color(self.hardware, formatting.colors.GREEN)
+			out += ', ' + formatting.color(self.hardware, formatting.colors.GREEN)
 
 		if self.firmware_base and self.firmware_release:
 			out += ', {:s}'.format(formatting.color('{0:s}/{1:s}'.format(
