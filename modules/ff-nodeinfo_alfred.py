@@ -80,7 +80,7 @@ class Node(Base):
 		out = []
 
 		if self.hostname:
-			out.appendformatting.color(self.hostname, formatting.colors.RED))
+			out.append(formatting.color(self.hostname, formatting.colors.RED))
 		else:
 			out.append(ormatting.color(self.node_id, formatting.colors.RED))
 
@@ -146,6 +146,18 @@ def status(bot, trigger):
 	session.close()
 
 	bot.say('Online: {:d} Nodes und {:d} Clients'.format(nodes, clients))
+
+@rate(1)
+@commands('n', 'nodeinfo')
+def nodeinfo(bot, trigger):
+	global session_maker_instance
+
+	session = session_maker_instance()
+
+	node = session.query(Node).filter_by(hostname = trigger.group(2)).first()
+
+	if node is not None:
+		bot.say(str(node))
 
 @interval(30)
 def fetch(bot, initial=False):
