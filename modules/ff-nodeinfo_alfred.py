@@ -60,7 +60,7 @@ class Node(Base):
 
 		if 'software' in data:
 			if 'autoupdater' in data['software']:
-				self.autoupdater = data['software']['autoupdater']['enabled']
+				self.autoupdate = data['software']['autoupdater']['enabled']
 				self.branch = data['software']['autoupdater']['branch']
 
 			if 'firmware' in data['software']:
@@ -157,8 +157,13 @@ def nodeinfo(bot, trigger):
 	node = session.query(Node).filter_by(hostname = trigger.group(2)).first()
 
 	if node is not None:
-		bot.say(str(node))
-
+		bot.msg(trigger.nick, str(node))
+		bot.msg(trigger.nick, 'Online:      {}'.format(str(node.online)))
+		bot.msg(trigger.nick, 'Clients:     {}'.format(str(node.clientcount)))
+		bot.msg(trigger.nick, 'Autoupdater: {}'.format(str(node.autoupdate)))
+		bot.msg(trigger.nick, 'Branch:      {}'.format(str(node.branch)))
+		bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
+		
 @interval(30)
 def fetch(bot, initial=False):
 	global session_maker_instance
