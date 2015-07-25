@@ -166,7 +166,8 @@ def nodeinfo(bot, trigger):
 					bot.msg(trigger.nick, 'Firmware:    {}/{}'.format(node.firmware_base, node.firmware_release))
 					bot.msg(trigger.nick, 'Autoupdater: {}'.format('on (' + str(node.branch) + ')' if node.autoupdate else 'off'))
 					bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
-					bot.msg(trigger.nick, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
+					if node.lat and node.lon:
+						bot.msg(trigger.nick, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
 					bot.msg(trigger.nick, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(node.hostname))
 			else:
 				bot.msg(trigger.nick, 'Zu viele Ergebnisse.')
