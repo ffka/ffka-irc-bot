@@ -77,22 +77,24 @@ class Node(Base):
 		return self.hostname or self.mac
 
 	def __str__(self):
+		out = []
+
 		if self.hostname:
-			out = formatting.color(self.hostname, formatting.colors.RED)
+			out.appendformatting.color(self.hostname, formatting.colors.RED))
 		else:
-			out = formatting.color(self.node_id, formatting.colors.RED)
+			out.append(ormatting.color(self.node_id, formatting.colors.RED))
 
 		if self.hardware:
-			out += ', ' + formatting.color(self.hardware, formatting.colors.GREEN)
+			out.append(formatting.color(self.hardware, formatting.colors.GREEN))
 
 		if self.firmware_base and self.firmware_release:
-			out += ', {:s}'.format(formatting.color('{0:s}/{1:s}'.format(
+			out.append(formatting.color('{0:s}/{1:s}'.format(
 				self.firmware_base, self.firmware_release), formatting.colors.PURPLE))
 
 		if self.lat and self.lon:
-			out += ', http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(self.lat, self.lon)
+			out.append('http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(self.lat, self.lon))
 
-		return out
+		return ', '.join(out)
 
 	def __eq__(self, other):
 		return self.mac == other.mac
