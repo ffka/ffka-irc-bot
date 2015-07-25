@@ -131,7 +131,7 @@ def shutdown(bot):
 	finally:
 		session.close()
 
-@rate(10)
+@rate(60)
 @commands('s', 'status')
 def status(bot, trigger):
 	global session_maker_instance
@@ -147,7 +147,7 @@ def status(bot, trigger):
 
 	bot.say('Online: {:d} Nodes und {:d} Clients'.format(nodes, clients))
 
-@rate(1)
+@rate(20)
 @commands('n', 'nodeinfo')
 def nodeinfo(bot, trigger):
 	global session_maker_instance
