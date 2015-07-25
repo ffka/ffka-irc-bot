@@ -152,17 +152,26 @@ def status(bot, trigger):
 def nodeinfo(bot, trigger):
 	global session_maker_instance
 
-	session = session_maker_instance()
+	if trigger.group(2):
+		session = session_maker_instance()
 
-	node = session.query(Node).filter_by(hostname = trigger.group(2)).first()
+		nodes = session.query(Node).filter(Node.hostname.like('%' + trigger.group(2) + '%')).all()
 
-	if node is not None:
-		bot.msg(trigger.nick, str(node))
-		bot.msg(trigger.nick, 'Online:      {}'.format(str(node.online)))
-		bot.msg(trigger.nick, 'Clients:     {}'.format(str(node.clientcount)))
-		bot.msg(trigger.nick, 'Autoupdater: {}'.format(str(node.autoupdate)))
-		bot.msg(trigger.nick, 'Branch:      {}'.format(str(node.branch)))
-		bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
+		if nodes:
+			if len(nodes) <= 2:
+				for node in nodes:
+					bot.msg(trigger.nick, '{} ist {}'.format(formatting.color(node.hostname, formatting.colors.WHITE),
+					 'online ({} Clients)'.format(node.clientcount) if node.online else 'offline'))
+					bot.msg(trigger.nick, 'Hardware:    {}'.format(node.hardware))
+					bot.msg(trigger.nick, 'Firmware:    {}/{}'.format(node.firmware_base, node.firmware_release))
+					bot.msg(trigger.nick, 'Autoupdater: {}'.format('on (' + str(node.branch) + ')' if node.autoupdate else 'off'))
+					bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
+					bot.msg(trigger.nick, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
+					bot.msg(trigger.nick, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(node.hostname))
+			else:
+				bot.msg(trigger.nick, 'Zu viele Ergebnisse.')
+		else:
+			bot.msg(trigger.nick, 'Keine Ergebnisse.')
 		
 @interval(30)
 def fetch(bot, initial=False):
