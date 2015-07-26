@@ -161,20 +161,30 @@ def nodeinfo(bot, trigger):
 		if nodes:
 			if len(nodes) <= 2:
 				for node in nodes:
-					bot.msg(trigger.nick, '{} ist {}'.format(formatting.color(node.hostname, formatting.colors.WHITE),
-					 'online ({} Clients)'.format(node.clientcount) if node.online else 'offline'))
-					bot.msg(trigger.nick, 'Hardware:    {}'.format(node.hardware))
-					bot.msg(trigger.nick, 'Firmware:    {}/{}'.format(node.firmware_base, node.firmware_release))
-					bot.msg(trigger.nick, 'Autoupdater: {}'.format('on (' + str(node.branch) + ')' if node.autoupdate else 'off'))
-					if node.contact:
-						bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
-					if node.lat and node.lon:
-						bot.msg(trigger.nick, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
-					bot.msg(trigger.nick, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))
+					printNodeinfo(bot, trigger.nick, node)
+
 			else:
-				bot.msg(trigger.nick, 'Zu viele Ergebnisse.')
+				exact_match = False
+				for node in nodes:
+					if node.hostname.lower() == trigger.group(2).lower():
+						exact_match = True
+						printNodeinfo(bot, trigger.nick, node)
+				if not exact_match:
+					bot.msg(trigger.nick, 'Zu viele Ergebnisse ({:d})'.format(len(nodes)))
 		else:
 			bot.msg(trigger.nick, 'Keine Ergebnisse.')
+
+def printNodeinfo(bot, recp, node):
+	bot.msg(recp, '{} ist {}'.format(formatting.color(node.hostname, formatting.colors.WHITE), 
+		'online ({} Clients)'.format(node.clientcount) if node.online else 'offline'))
+	bot.msg(recp, 'Hardware:    {}'.format(node.hardware))
+	bot.msg(recp, 'Firmware:    {}/{}'.format(node.firmware_base, node.firmware_release))
+	bot.msg(recp, 'Autoupdater: {}'.format('on (' + str(node.branch) + ')' if node.autoupdate else 'off'))
+	if node.contact:
+		bot.msg(recp, 'Contact:     {}'.format(str(node.contact)))
+	if node.lat and node.lon:
+		bot.msg(recp, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
+	bot.msg(recp, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))	
 		
 @interval(30)
 def fetch(bot, initial=False):
