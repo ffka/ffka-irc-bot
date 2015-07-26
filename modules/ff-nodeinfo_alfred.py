@@ -11,6 +11,7 @@ from sqlalchemy import inspect
 import datetime
 import math
 import json
+import re
 import requests
 
 Base = declarative_base()
@@ -169,7 +170,7 @@ def nodeinfo(bot, trigger):
 						bot.msg(trigger.nick, 'Contact:     {}'.format(str(node.contact)))
 					if node.lat and node.lon:
 						bot.msg(trigger.nick, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
-					bot.msg(trigger.nick, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(node.hostname))
+					bot.msg(trigger.nick, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))
 			else:
 				bot.msg(trigger.nick, 'Zu viele Ergebnisse.')
 		else:
