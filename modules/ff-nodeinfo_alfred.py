@@ -93,7 +93,7 @@ class Node(Base):
 				self.firmware_base, self.firmware_release), formatting.colors.PURPLE))
 
 		if self.lat and self.lon:
-			out.append('http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(self.lat, self.lon))
+			out.append('http://s.ffka.net/m/{:.4f}/{:.4f}'.format(self.lat, self.lon))
 
 		return ', '.join(out)
 
@@ -183,8 +183,8 @@ def printNodeinfo(bot, recp, node):
 	if node.contact:
 		bot.msg(recp, 'Contact:     {}'.format(str(node.contact)))
 	if node.lat and node.lon:
-		bot.msg(recp, 'Map:         http://www.ffka.net/map/geomap.html?lat={0:.4f}&lon={1:.4f}'.format(node.lat, node.lon))
-	bot.msg(recp, 'Graphana:    http://ffka.xylou.info/#/dashboard/file/pernode.json?var-Knotenname={}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))	
+		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(node.lat, node.lon)))
+	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))	
 		
 @interval(30)
 def fetch(bot, initial=False):
