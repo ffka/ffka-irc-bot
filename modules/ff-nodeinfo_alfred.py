@@ -184,7 +184,7 @@ def printNodeinfo(bot, recp, node):
 		bot.msg(recp, 'Contact:     {}'.format(str(node.contact)))
 	if node.lat and node.lon:
 		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(node.lat, node.lon)))
-	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.hostname)))	
+	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
 		
 @interval(30)
 def fetch(bot, initial=False):
@@ -197,7 +197,11 @@ def fetch(bot, initial=False):
 	if 'nodes_last_modified' in bot.memory['ffka']:
 		headers['If-Modified-Since'] = bot.memory['ffka']['alfred_last_modified']
 
-	result = requests.get(bot.config.freifunk.alfred_uri, headers=headers)
+	try:
+		result = requests.get(bot.config.freifunk.alfred_uri, headers=headers)
+	except Exception as e:
+		print('Problems requesting alfred.json: {}'.format(str(e)))
+		return
 
 	if result.status_code == 304:
 		# no update since last fetch
@@ -212,7 +216,7 @@ def fetch(bot, initial=False):
 		mapdata = json.loads(result.text)
 	except ValueError as e:
 		# err, we have a problem!
-		print('Unable to parse JSON! Error: %s' % str(e))
+		print('Unable to parse JSON! Error: {}'.format(str(e)))
 		return
 
 	# No problems? Everything fine? Update last modified timestamp!
