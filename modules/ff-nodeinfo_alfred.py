@@ -215,7 +215,8 @@ def highscore(bot, trigger):
 	for score in session.query(Highscore):
 		highscores[score.name] = score
 
-	bot.say('Aktueller Highscore: {:d} Nodes und {:d} Clients'.format(highscores['nodes'].count, highscores['clients'].count))
+	bot.say('Highscore: {:d} Nodes ({:s}) und {:d} Clients ({:s})'.format(highscores['nodes'].count, 
+		highscores['nodes'].date.strftime('%d.%m.%y %H:%M'), highscores['clients'].count, highscores['clients'].date.strftime('%d.%m.%y %H:%M')))
 		
 @interval(30)
 def fetch(bot, initial=False):
