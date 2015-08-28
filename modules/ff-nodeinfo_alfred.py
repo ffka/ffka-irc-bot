@@ -103,6 +103,25 @@ class Node(Base):
 	def __hash__(self):
 		return hash(self.mac)
 
+class Highscore(Base):
+	__tablename__ = 'highscores'
+
+	name = Column(String, primary_key=True)
+	date = Column(DateTime)
+	count = Column(Integer)
+
+	def __init__(self, name):
+		self.name = name
+		self.count = 0
+
+	def update(self, count):
+		if self.count < count:
+			self.count = count
+			self.date = datetime.datetime.now()
+			return True
+		return False
+
+
 def setup(bot):
 	global session_maker_instance
 
@@ -185,6 +204,18 @@ def printNodeinfo(bot, recp, node):
 	if node.lat and node.lon:
 		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(node.lat, node.lon)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
+
+@commands('h', 'highscore')
+def highscore(bot, trigger):
+	global session_maker_instance
+
+	session = session_maker_instance()
+
+	highscores = {}
+	for score in session.query(Highscore):
+		highscores[score.name] = score
+
+	bot.say('Aktueller Highscore: {:d} Nodes und {:d} Clients'.format(highscores['nodes'].count, highscores['clients'].count))
 		
 @interval(30)
 def fetch(bot, initial=False):
@@ -224,21 +255,43 @@ def fetch(bot, initial=False):
 
 	session = session_maker_instance()
 
+	highscores = {}
+
 	with session.no_autoflush:
+		for score in session.query(Highscore):
+			highscores[score.name] = score
+
+		if 'clients' not in highscores:
+			highscores['clients'] = Highscore('clients')
+
+		if 'nodes' not in highscores:
+			highscores['nodes'] = Highscore('nodes')
+
 		# Set all Nodes offline. Only nodes present in alfred.json are online.
 		for node in session.query(Node):
 			node.online = False
 
+		total_nodes = 0
+		total_clients = 0
 		for key, node in mapdata.items():
 			node['mac'] = key
 			node['online'] = True
 			session.merge(Node(node))
+			total_nodes += 1
+			if 'clients' in node:
+				total_clients += node['clients']['total']
+
+		highscores['nodes'].update(total_nodes)
+		highscores['clients'].update(total_clients)
+
+		for score in highscores.values():
+			session.merge(score)
 
 		if not initial:
-			for node in session.new:
+			for node in filter(lambda item: type(item) is Node, session.new):
 				bot.msg(bot.config.freifunk.channel, 'Neuer Knoten: {:s}'.format(str(node)))
 
-			for node in session.dirty:
+			for node in filter(lambda item: type(item) is Node, session.dirty):
 				attrs = inspect(node).attrs
 				location_updated = False
 
@@ -273,6 +326,8 @@ def fetch(bot, initial=False):
 								formatting.color(str(node.name), formatting.colors.WHITE), 
 								str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 
+			for highscore in filter(lambda item: type(item) is Highscore, (session.dirty)):
+				bot.msg(bot.config.freifunk.channel, 'Neuer Highscore: {:d} {:s}'.format(highscore.count, highscore.name.capitalize()))
 		try:
 			session.commit()
 		except:
