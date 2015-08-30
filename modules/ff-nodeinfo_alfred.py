@@ -340,18 +340,18 @@ def fetch(bot, initial=False):
 def calc_distance(lat1, long1, lat2, long2):
 	if not (lat1 and lat2 and long1 and long2):
 		return 0
-		
+
 	# http://www.johndcook.com/blog/python_longitude_latitude/
-    degrees_to_radians = math.pi/180.0
+	degrees_to_radians = math.pi/180.0
 
-    phi1 = (90.0 - lat1)*degrees_to_radians
-    phi2 = (90.0 - lat2)*degrees_to_radians
+	phi1 = (90.0 - lat1)*degrees_to_radians
+	phi2 = (90.0 - lat2)*degrees_to_radians
 
-    theta1 = long1*degrees_to_radians
-    theta2 = long2*degrees_to_radians
+	theta1 = long1*degrees_to_radians
+	theta2 = long2*degrees_to_radians
         
-    cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) + 
+	cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) + 
            math.cos(phi1)*math.cos(phi2))
-    arc = math.acos( cos )
+	arc = math.acos( cos )
 
-    return arc * 6378137 
+	return arc * 6378137 
