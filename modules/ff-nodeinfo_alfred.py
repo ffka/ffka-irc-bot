@@ -338,6 +338,9 @@ def fetch(bot, initial=False):
 			session.close()
 
 def calc_distance(lat1, long1, lat2, long2):
+	if not (lat1 and lat2 and long1 and long2):
+		return 0
+		
 	# http://www.johndcook.com/blog/python_longitude_latitude/
     degrees_to_radians = math.pi/180.0
 
