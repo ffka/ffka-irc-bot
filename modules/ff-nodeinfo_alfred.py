@@ -52,12 +52,17 @@ class Node(Base):
 		if 'location' in data:
 			self.lat = data['location']['latitude']
 			self.lon = data['location']['longitude']
+		else:
+			self.lat = None
+			self.lon = None
 
 		if 'hardware' in data:
 			self.hardware = data['hardware']['model']
 
 		if 'owner' in data:
 			self.contact = data['owner']['contact']
+		else:
+			self.contact = None
 
 		if 'software' in data:
 			if 'autoupdater' in data['software']:
