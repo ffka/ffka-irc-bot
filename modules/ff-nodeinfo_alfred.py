@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from willie import formatting
-from willie.module import commands, rate, interval
+from willie.module import commands, rate, interval, example
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -159,6 +159,7 @@ def shutdown(bot):
 @rate(60)
 @commands('s', 'status')
 def status(bot, trigger):
+	"""Zeigt die aktuelle Anzahl verbundener Knoten und Clients an."""
 	global session_maker_instance
 
 	session = session_maker_instance()
@@ -174,7 +175,9 @@ def status(bot, trigger):
 
 @rate(20)
 @commands('n', 'nodeinfo')
+@example('.nodeinfo entropia')
 def nodeinfo(bot, trigger):
+	"""Zeigt Infos über bis zu 2 Knoten an. Der Knotenname muss nicht vollständig angegeben werden."""
 	global session_maker_instance
 
 	if trigger.group(2):
@@ -212,6 +215,7 @@ def printNodeinfo(bot, recp, node):
 
 @commands('h', 'highscore')
 def highscore(bot, trigger):
+	"""Zeigt die Highscores an."""
 	global session_maker_instance
 
 	session = session_maker_instance()
@@ -335,7 +339,7 @@ def fetch(bot, initial=False):
 										bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
 								else:
 									bot.msg(bot.config.freifunk.change_announce_target, 
-										'Knoten {:s} hat keine Position mehr.'.format(
+										'Knoten {:s} hat keine Position mehr'.format(
 										formatting.color(str(node.name), formatting.colors.WHITE)))
 
 						else:
