@@ -202,7 +202,7 @@ def printNodeinfo(bot, recp, node):
 	if node.contact:
 		bot.msg(recp, 'Contact:     {}'.format(str(node.contact)))
 	if node.lat and node.lon:
-		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(node.lat, node.lon)))
+		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(lat=node.lat, lon=node.lon)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
 
 @commands('h', 'highscore')
@@ -317,11 +317,22 @@ def fetch(bot, initial=False):
 								else:
 									old_lon = attrs.lon.value
 
-								bot.msg(bot.config.freifunk.change_announce_target, 
-									'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}?lat={:.4f}&lon={:.4f}'.format(
-									formatting.color(str(node.name), formatting.colors.WHITE), calc_distance(
-										old_lat, old_lon, attrs.lat.value, attrs.lon.value), 
-									bot.config.freifunk.map_uri, attrs.lat.value, attrs.lon.value))
+								if (old_lat and old_lon and attrs.lat.value and attrs.lon.value):
+									bot.msg(bot.config.freifunk.change_announce_target, 
+										'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}'.format(
+										formatting.color(str(node.name), formatting.colors.WHITE), calc_distance(
+											old_lat, old_lon, attrs.lat.value, attrs.lon.value), 
+										bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
+								elif (attrs.lat.value and attrs.lon.value):
+									bot.msg(bot.config.freifunk.change_announce_target, 
+										'Knoten {:s} hat nun eine Position: {:s}'.format(
+										formatting.color(str(node.name), formatting.colors.WHITE), 
+										bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
+								else:
+									bot.msg(bot.config.freifunk.change_announce_target, 
+										'Knoten {:s} hat keine Position mehr.'.format(
+										formatting.color(str(node.name), formatting.colors.WHITE)))
+
 						else:
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
 								formatting.color(str(node.name), formatting.colors.WHITE), 
