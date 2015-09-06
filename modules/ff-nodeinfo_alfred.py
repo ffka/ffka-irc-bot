@@ -48,6 +48,7 @@ class Node(Base):
 
 		if 'online' in data:
 			self.online = True
+			self.lastseen = datetime.datetime.now()
 
 		if 'hostname' in data:
 			self.hostname = data['hostname']
@@ -212,6 +213,8 @@ def printNodeinfo(bot, recp, node):
 	bot.msg(recp, 'Autoupdater: {}'.format('on (' + str(node.branch) + ')' if node.autoupdate else 'off'))
 	if node.contact:
 		bot.msg(recp, 'Contact:     {}'.format(str(node.contact)))
+	if node.lastseen:
+		bot.msg(recp, 'Lastseen:    {}'.format(node.lastseen.strftime('%d.%m.%y %H:%M')))
 	if node.lat and node.lon:
 		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(lat=node.lat, lon=node.lon)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
@@ -284,13 +287,14 @@ def fetch(bot, initial=False):
 		if not initial:
 			for node in filter(lambda item: type(item) is Node, session.new):
 				bot.msg(bot.config.freifunk.channel, 'Neuer Knoten: {:s}'.format(str(node)))
+				node.firstseen = datetime.datetime.now()
 
 			for node in filter(lambda item: type(item) is Node, session.dirty):
 				attrs = inspect(node).attrs
 				location_updated = False
 
 				for attr in attrs:
-					if attr.key not in bot.config.freifunk.get_list('change_no_announce') and attr.history.has_changes():
+					if attr.key not in (['lastseen', 'firstseen'] + bot.config.freifunk.get_list('change_no_announce')) and attr.history.has_changes():
 						if attr.key == 'online':
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(
 								formatting.color(str(node.name), formatting.colors.WHITE), 
