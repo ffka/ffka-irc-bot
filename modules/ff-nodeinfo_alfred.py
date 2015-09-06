@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import inspect
+from sqlalchemy import inspect, or_
 import datetime
 import math
 import json
@@ -268,34 +268,15 @@ def fetch(bot, initial=False):
 	highscores = {}
 
 	with session.no_autoflush:
-		for score in session.query(Highscore):
-			highscores[score.name] = score
-
-		if 'clients' not in highscores:
-			highscores['clients'] = Highscore('clients')
-
-		if 'nodes' not in highscores:
-			highscores['nodes'] = Highscore('nodes')
-
 		# Set all Nodes offline. Only nodes present in alfred.json are online.
 		for node in session.query(Node):
 			node.online = False
 
-		total_nodes = 0
-		total_clients = 0
-		for key, node in mapdata.items():
-			node['mac'] = key
-			node['online'] = True
-			session.merge(Node(node))
-			total_nodes += 1
-			if 'clients' in node:
-				total_clients += node['clients']['total']
-
-		highscores['nodes'].update(total_nodes)
-		highscores['clients'].update(total_clients)
-
-		for score in highscores.values():
-			session.merge(score)
+		for key, data in mapdata.items():
+			data['mac'] = key
+			data['online'] = True
+			data['source'] = 'alfred.json'
+			session.merge(Node(data))
 
 		if not initial:
 			for node in filter(lambda item: type(item) is Node, session.new):
@@ -346,16 +327,69 @@ def fetch(bot, initial=False):
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
 								formatting.color(str(node.name), formatting.colors.WHITE), 
 								str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
-
-			for highscore in filter(lambda item: type(item) is Highscore, (session.dirty)):
-				bot.msg(bot.config.freifunk.channel, 'Neuer Highscore: {:d} {:s}'.format(highscore.count, highscore.name.capitalize()))
 		try:
 			session.commit()
+
+			if not initial:
+				check_highscores(bot)
 		except:
 			session.rollback()
 			raise
 		finally:
 			session.close()
+
+def check_highscores(bot):
+	global session_maker_instance
+
+	session = session_maker_instance()
+
+	highscores = {}
+
+	with session.no_autoflush:
+		for score in session.query(Highscore):
+			highscores[score.name] = score
+
+			if 'clients' not in highscores:
+				highscores['clients'] = Highscore('clients')
+
+			if 'nodes' not in highscores:
+				highscores['nodes'] = Highscore('nodes')
+
+			if 'gateways' not in highscores:
+				highscores['gateways'] = Highscore('gateways')
+
+		highscores['gateways'].update(
+			session.query(Node)
+			.filter(Node.gateway == True)
+			.filter(Node.online == True)
+			.count()
+			)
+
+		highscores['nodes'].update(
+			session.query(Node)
+			.filter(or_(Node.gateway == False, Node.gateway == None))
+			.filter(Node.online == True)
+			.count()
+			)
+
+		highscores['clients'].update(
+			session.query(sqlalchemy.func.sum(Node.clientcount))
+			.filter(or_(Node.gateway == False, Node.gateway == None)).scalar()
+			)
+
+		for highscore in highscores.values():
+			session.merge(highscore)
+
+		for highscore in session.dirty:
+			bot.msg(bot.config.freifunk.channel, 'Neuer Highscore: {:d} {:s}'.format(highscore.count, highscore.name.capitalize()))
+
+	try:
+		session.commit()
+	except:
+		session.rollback()
+		raise
+	finally:
+		session.close()
 
 def calc_distance(lat1, long1, lat2, long2):
 	if not (lat1 and lat2 and long1 and long2):
