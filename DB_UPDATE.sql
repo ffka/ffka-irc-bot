@@ -22,8 +22,8 @@ CREATE TABLE "nodes_copy" (
         CHECK (gateway IN (0, 1))
 );
 
-INSERT INTO nodes_copy (node_id, mac, hostname, lat, lon, hardware, contact, autoupdate, branch, firmware_base, firmware_release, firstseen, lastseen, online, gateway, clientcount, 'alfred.json')
-SELECT node_id, mac, hostname, lat, lon, hardware, contact, autoupdate, branch, firmware_base, firmware_release, firstseen, lastseen, online, gateway, clientcount FROM nodes;
+INSERT INTO nodes_copy (node_id, mac, hostname, lat, lon, hardware, contact, autoupdate, branch, firmware_base, firmware_release, firstseen, lastseen, online, gateway, clientcount, source)
+SELECT node_id, mac, hostname, lat, lon, hardware, contact, autoupdate, branch, firmware_base, firmware_release, firstseen, lastseen, online, gateway, clientcount, 'alfred.json' FROM nodes;
 
 DROP TABLE nodes;
 
