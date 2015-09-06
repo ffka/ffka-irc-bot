@@ -8,6 +8,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import inspect, or_
+# looks like a scoping problem in willie, so we have to import sqlalchemy instead of func from sqlalchemy!
+#from sqlalchemy import func
+import sqlalchemy
 import datetime
 import math
 import json
