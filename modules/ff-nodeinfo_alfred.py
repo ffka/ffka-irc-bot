@@ -23,8 +23,8 @@ session_maker_instance = None
 class Node(Base):
 	__tablename__ = 'nodes'
 
-	mac = Column(String, primary_key=True)
-	node_id = Column(String)
+	node_id = Column(String, primary_key=True)
+	mac = Column(String)
 	hostname = Column(String)
 	lat = Column(Float)
 	lon = Column(Float)
@@ -42,10 +42,12 @@ class Node(Base):
 	source = Column(String)
 
 	def __init__(self, data):
-		self.mac = data['mac']
-
 		if 'node_id' in data:
 			self.node_id = data['node_id']
+		else:
+			self.node_id = data['mac'].replace(':','')
+
+		self.mac = data['mac']
 
 		if 'online' in data:
 			self.online = True
@@ -108,10 +110,10 @@ class Node(Base):
 		return ', '.join(out)
 
 	def __eq__(self, other):
-		return self.mac == other.mac
+		return self.node_id == other.node_id
 
 	def __hash__(self):
-		return hash(self.mac)
+		return hash(self.node_id)
 
 class Highscore(Base):
 	__tablename__ = 'highscores'
