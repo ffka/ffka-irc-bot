@@ -235,7 +235,7 @@ def fetch(bot, initial=False):
 		'User-Agent': 'ffka-irc-bot 0.1.0'
 	}
 
-	if 'nodes_last_modified' in bot.memory['ffka']:
+	if 'alfred_last_modified' in bot.memory['ffka']:
 		headers['If-Modified-Since'] = bot.memory['ffka']['alfred_last_modified']
 
 	try:
