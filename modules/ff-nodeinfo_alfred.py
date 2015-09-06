@@ -39,6 +39,7 @@ class Node(Base):
 	online = Column(Boolean)
 	gateway = Column(Boolean)
 	clientcount = Column(Integer)
+	source = Column(String)
 
 	def __init__(self, data):
 		self.mac = data['mac']
@@ -275,7 +276,7 @@ def fetch(bot, initial=False):
 
 	with session.no_autoflush:
 		# Set all Nodes offline. Only nodes present in alfred.json are online.
-		for node in session.query(Node):
+		for node in session.query(Node).filter(Node.source == 'alfred.json'):
 			node.online = False
 
 		for key, data in mapdata.items():
