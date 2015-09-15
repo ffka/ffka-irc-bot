@@ -20,6 +20,8 @@ import requests
 Base = declarative_base()
 session_maker_instance = None
 
+config = {}
+
 class Node(Base):
 	__tablename__ = 'nodes'
 
@@ -90,6 +92,7 @@ class Node(Base):
 		return self.hostname or self.mac
 
 	def __str__(self):
+		global config
 		out = []
 
 		if self.hostname:
@@ -105,7 +108,7 @@ class Node(Base):
 				self.firmware_base, self.firmware_release), formatting.colors.PURPLE))
 
 		if self.lat and self.lon:
-			out.append('http://s.ffka.net/m/{:.4f}/{:.4f}'.format(self.lat, self.lon))
+			out.append(config.map_uri.format(lat = self.lat, lon = self.lon))
 
 		return ', '.join(out)
 
@@ -135,14 +138,17 @@ class Highscore(Base):
 
 
 def setup(bot):
-	global session_maker_instance
+	global session_maker_instance, config
+
+	config = bot.config.freifunk
 
 	engine = create_engine('sqlite:///{0}'.format(bot.config.freifunk.db_path))
 	Base.metadata.create_all(engine)
 
 	session_maker_instance = sessionmaker(engine)
-	
-	bot.memory['ffka'] = {}
+
+	if 'ff' not in bot.memory:
+		bot.memory['ff'] = {}
 
 	fetch(bot, initial=True)
 
@@ -241,11 +247,11 @@ def fetch(bot, initial=False):
 	global session_maker_instance
 
 	headers = {
-		'User-Agent': 'ffka-irc-bot 0.1.0'
+		'User-Agent': 'ff-irc-bot'
 	}
 
-	if 'alfred_last_modified' in bot.memory['ffka']:
-		headers['If-Modified-Since'] = bot.memory['ffka']['alfred_last_modified']
+	if 'alfred_last_modified' in bot.memory['ff']:
+		headers['If-Modified-Since'] = bot.memory['ff']['alfred_last_modified']
 
 	try:
 		result = requests.get(bot.config.freifunk.alfred_uri, headers=headers)
@@ -270,7 +276,7 @@ def fetch(bot, initial=False):
 		return
 
 	# No problems? Everything fine? Update last modified timestamp!
-	bot.memory['ffka']['alfred_last_modified'] = result.headers['Last-Modified']
+	bot.memory['ff']['alfred_last_modified'] = result.headers['Last-Modified']
 
 	session = session_maker_instance()
 
