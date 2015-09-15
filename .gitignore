@@ -4,3 +4,4 @@
 *.pid
 log/
 __pycache__/
+.idea/
