@@ -371,16 +371,6 @@ def check_highscores(bot):
 			if 'nodes' not in highscores:
 				highscores['nodes'] = Highscore('nodes')
 
-			if 'gateways' not in highscores:
-				highscores['gateways'] = Highscore('gateways')
-
-		highscores['gateways'].update(
-			session.query(Node)
-			.filter(Node.gateway == True)
-			.filter(Node.online == True)
-			.count()
-			)
-
 		highscores['nodes'].update(
 			session.query(Node)
 			.filter(or_(Node.gateway == False, Node.gateway == None))
