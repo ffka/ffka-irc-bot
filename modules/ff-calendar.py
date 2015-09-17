@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from willie.module import commands, rate, interval, rule, event
+from willie.module import commands, rate, interval, rule, event, example
 
 from datetime import datetime, timedelta, timezone
 from dateutil import parser
@@ -72,6 +72,7 @@ def setup(bot):
 @rate(600)
 @commands('ne', 'nextevent', 'treffen', 't')
 def next_event(bot, trigger):
+	"""Gibt das nächste Treffen aus."""
 	bot.say('Nächstes Treffen: {}'.format(get_next_event(bot)))
 
 @interval(60*5)
