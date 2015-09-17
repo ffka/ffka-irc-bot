@@ -8,8 +8,6 @@ import caldav
 import pytz
 import re
 
-_topic = None
-
 class Event():
 	def __init__(self, title, start, end):
 		self.title = title
@@ -18,8 +16,8 @@ class Event():
 
 	def fromVEvent(event):
 		title = event._get_instance().vevent.summary.value
-		start = parser.parse(event._get_instance().vevent.dtstart.value)
-		end = parser.parse(event._get_instance().vevent.dtend.value)
+		start = parser.parse(str(event._get_instance().vevent.dtstart.value))
+		end = parser.parse(str(event._get_instance().vevent.dtend.value))
 
 		return Event(title, start, end)
 
@@ -74,27 +72,21 @@ def getNextEvent(bot, trigger):
 
 @interval(60*5)
 def changeTopic(bot, trigger=None):
-	global _topic
-
 	if bot.memory.contains('topic'):
-		_topic = bot.memory['topic']
-#	if _topic is not None:
 		nextEvent = fetchNextEvent(bot)
 
-		m = re.search(r'N(?:ä|ae)chster Termin: (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', _topic)
+		m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', bot.memory['topic'])
 
 		if m.group(1).strip() != str(nextEvent):
-			topic = re.sub(r'N(ä|ae)chster Termin: \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', 'Nächster Termin: {} |'.format(nextEvent), _topic)
+			topic = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', r'\1: {} |'.format(nextEvent), bot.memory['topic'])
 		
 			bot.write(('TOPIC', '{} :{}'.format(bot.config.freifunk.channel, topic)))
 
 @event('TOPIC')
 @rule('.*')
 def topicChanged(bot, topic):
-	global _topic
-	_topic = topic
 	bot.memory['topic'] = topic
-	print('Topic changed! New Topic: {}'.format(_topic))
+	print('Topic changed! New Topic: {}'.format(topic))
 
 def fetchNextEvent(bot):
 	client = caldav.DAVClient(bot.config.freifunk.caldav_url)
