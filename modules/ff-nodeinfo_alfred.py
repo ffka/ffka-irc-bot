@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from willie import formatting
-from willie.module import commands, rate, interval, example
+from willie.module import commands, rate, interval
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -170,7 +170,7 @@ def shutdown(bot):
 		session.close()
 
 @rate(60)
-@commands('s', 'status')
+#@commands('s', 'status')
 def status(bot, trigger):
 	"""Zeigt die aktuelle Anzahl verbundener Knoten und Clients an."""
 	global session_maker_instance
@@ -187,7 +187,7 @@ def status(bot, trigger):
 	bot.say('Online: {:d} Nodes und {:d} Clients'.format(nodes, clients))
 
 @rate(20)
-@commands('n', 'nodeinfo')
+#@commands('n', 'nodeinfo')
 @example('.nodeinfo entropia')
 def nodeinfo(bot, trigger):
 	"""Zeigt Infos über bis zu 2 Knoten an. Der Knotenname muss nicht vollständig angegeben werden."""
@@ -214,6 +214,8 @@ def nodeinfo(bot, trigger):
 		else:
 			bot.msg(trigger.nick, 'Keine Ergebnisse.')
 
+		session.close()
+
 def printNodeinfo(bot, recp, node):
 	bot.msg(recp, '{} ist {}'.format(formatting.color(node.hostname, formatting.colors.WHITE), 
 		'online ({} Clients)'.format(node.clientcount) if node.online else 'offline'))
@@ -228,7 +230,7 @@ def printNodeinfo(bot, recp, node):
 		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(lat=node.lat, lon=node.lon)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
 
-@commands('h', 'highscore')
+#@commands('h', 'highscore')
 def highscore(bot, trigger):
 	"""Zeigt die Highscores an."""
 	global session_maker_instance
@@ -241,6 +243,8 @@ def highscore(bot, trigger):
 
 	bot.say('Highscore: {:d} Nodes ({:s}) und {:d} Clients ({:s})'.format(highscores['nodes'].count, 
 		highscores['nodes'].date.strftime('%d.%m.%y %H:%M'), highscores['clients'].count, highscores['clients'].date.strftime('%d.%m.%y %H:%M')))
+
+	session.close()
 		
 @interval(30)
 def fetch(bot, initial=False):
