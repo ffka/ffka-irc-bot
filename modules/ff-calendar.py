@@ -2,7 +2,7 @@
 
 from willie.module import commands, rate, interval, rule, event
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dateutil import parser
 import caldav
 import pytz
@@ -65,30 +65,51 @@ class Event():
 
 		return s_start > o_start
 
+def setup(bot):
+	if not bot.memory.contains('topic'):
+		bot.memory['topic'] = {}
+
 @rate(600)
-@commands('ne', 'nextevent')
-def getNextEvent(bot, trigger):
-	bot.say('Nächstes Event: {}'.format(fetchNextEvent(bot)))
+@commands('ne', 'nextevent', 'treffen', 't')
+def next_event(bot, trigger):
+	bot.say('Nächstes Treffen: {}'.format(get_next_event(bot)))
 
 @interval(60*5)
 def changeTopic(bot, trigger=None):
-	if bot.memory.contains('topic'):
-		nextEvent = fetchNextEvent(bot)
+	if bot.config.freifunk.channel in bot.memory['topic']:
+		next_event = get_next_event(bot)
 
-		m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', bot.memory['topic'])
+		if next_event:
+			m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', bot.memory['topic'][bot.config.freifunk.channel])
 
-		if m.group(1).strip() != str(nextEvent):
-			topic = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', r'\1: {} |'.format(nextEvent), bot.memory['topic'])
-		
-			bot.write(('TOPIC', '{} :{}'.format(bot.config.freifunk.channel, topic)))
+			if m and m.group(1).strip() != str(next_event):
+				topic = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', r'\1: {} |'.format(next_event), bot.memory['topic'][bot.config.freifunk.channel])
+
+				bot.write(('TOPIC', '{} :{}'.format(bot.config.freifunk.channel, topic)))
+
+@interval(60*60)
+def announce(bot):
+	events = fetch_events(bot)
+
+	now = datetime.now(tz=timezone.utc)
+
+	for event in events:
+		if now + timedelta(hours=1) < event.start < now + timedelta(hours=2):
+			bot.msg(bot.config.freifunk.channel, 'Nächster Termin (in {:s}): {:s}'.format(Event.formattimedelta(event.start - now), str(event)))
 
 @event('TOPIC')
 @rule('.*')
-def topicChanged(bot, topic):
-	bot.memory['topic'] = topic
-	print('Topic changed! New Topic: {}'.format(topic))
+def topic_changed(bot, topic):
+	bot.memory['topic'][topic.sender] = str(topic)
+	print('Topic for {} changed! New Topic: {}'.format(topic.sender, str(topic)))
 
-def fetchNextEvent(bot):
+def get_next_event(bot):
+	events = fetch_events(bot)
+
+	if len(events):
+		return events[0]
+
+def fetch_events(bot):
 	client = caldav.DAVClient(bot.config.freifunk.caldav_url)
 	principal = client.principal()
 	calendars = principal.calendars()
@@ -105,7 +126,4 @@ def fetchNextEvent(bot):
 			for event in results:
 				eventlist.append(Event.fromVEvent(event))
 
-	if len(eventlist):
-		eventlist = sorted(eventlist)
-
-		return eventlist[0]
+	return sorted(eventlist)
