@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from willie import formatting
-from willie.module import commands, rate, interval
+from willie.module import commands, rate, interval, example
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -86,6 +86,9 @@ class Node(Base):
 			self.clientcount = data['clients']['total']
 		else:
 			self.clientcount = 0
+
+		if 'source' in data:
+			self.source = data['source']
 
 	@property
 	def name(self):
