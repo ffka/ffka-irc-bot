@@ -87,7 +87,7 @@ def check_topic(bot, trigger=None):
 		next_event = get_next_event(bot)
 
 		if next_event:
-			m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', bot.memory['topic'][bot.config.freifunk.channel])
+			m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})?[^\|]*)(?:\|)?', bot.memory['topic'][bot.config.freifunk.channel])
 
 			if m and m.group(1).strip() != str(next_event):
 				topicstring = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})?[^\|]*(\|)?', r'\1: {} |'.format(next_event), bot.memory['topic'][bot.config.freifunk.channel])
