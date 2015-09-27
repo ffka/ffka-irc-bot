@@ -173,7 +173,7 @@ def shutdown(bot):
 		session.close()
 
 @rate(60)
-#@commands('s', 'status')
+@commands('s', 'status')
 def status(bot, trigger):
 	"""Zeigt die aktuelle Anzahl verbundener Knoten und Clients an."""
 	global session_maker_instance
@@ -190,7 +190,7 @@ def status(bot, trigger):
 	bot.say('Online: {:d} Nodes und {:d} Clients'.format(nodes, clients))
 
 @rate(20)
-#@commands('n', 'nodeinfo')
+@commands('n', 'nodeinfo')
 @example('.nodeinfo entropia')
 def nodeinfo(bot, trigger):
 	"""Zeigt Infos über bis zu 2 Knoten an. Der Knotenname muss nicht vollständig angegeben werden."""
@@ -233,7 +233,7 @@ def printNodeinfo(bot, recp, node):
 		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(lat=node.lat, lon=node.lon)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
 
-#@commands('h', 'highscore')
+@commands('h', 'highscore')
 def highscore(bot, trigger):
 	"""Zeigt die Highscores an."""
 	global session_maker_instance
