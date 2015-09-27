@@ -75,8 +75,14 @@ def next_event(bot, trigger):
 	"""Gibt das nächste Treffen aus."""
 	bot.say('Nächstes Treffen: {}'.format(get_next_event(bot)))
 
+@commands('settopic')
+def set_topic(bot, trigger):
+	if trigger.admin:
+		topic(bot, bot.config.freifunk.channel, trigger.group(2))
+
+
 @interval(60*5)
-def changeTopic(bot, trigger=None):
+def check_topic(bot, trigger=None):
 	if bot.config.freifunk.channel in bot.memory['topic']:
 		next_event = get_next_event(bot)
 
@@ -84,9 +90,9 @@ def changeTopic(bot, trigger=None):
 			m = re.search(r'N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event): (\d{2}\.\d{2}.\d{2,4}(?: \d{2}:\d{2})? [^\|]*)(?:\|)?', bot.memory['topic'][bot.config.freifunk.channel])
 
 			if m and m.group(1).strip() != str(next_event):
-				topic = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', r'\1: {} |'.format(next_event), bot.memory['topic'][bot.config.freifunk.channel])
+				topicstring = re.sub(r'(N(?:ä|ae)chste(?:r|s) (?:Termin|Treffen|Event)): \d{2}\.\d{2}.\d{2,4}( \d{2}:\d{2})? [^\|]*(\|)?', r'\1: {} |'.format(next_event), bot.memory['topic'][bot.config.freifunk.channel])
 
-				bot.write(('TOPIC', '{} :{}'.format(bot.config.freifunk.channel, topic)))
+				topic(bot, bot.config.freifunk.channel, topicstring)
 
 @interval(60*60)
 def announce(bot):
@@ -128,3 +134,6 @@ def fetch_events(bot):
 				eventlist.append(Event.fromVEvent(event))
 
 	return sorted(eventlist)
+
+def topic(bot, channel, topic):
+	bot.msg('chanserv', 'TOPIC {} {}'.format(channel, topic))
