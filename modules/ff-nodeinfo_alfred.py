@@ -293,6 +293,7 @@ def fetch(bot, initial=False):
 		# Set all Nodes offline. Only nodes present in alfred.json are online.
 		for node in session.query(Node).filter(Node.source == 'alfred.json'):
 			node.online = False
+			node.clientcount = 0
 
 		for key, data in mapdata.items():
 			data['mac'] = key
