@@ -287,8 +287,6 @@ def fetch(bot, initial=False):
 
 	session = session_maker_instance()
 
-	highscores = {}
-
 	with session.no_autoflush:
 		# Set all Nodes offline. Only nodes present in alfred.json are online.
 		for node in session.query(Node).filter(Node.source == 'alfred.json'):
