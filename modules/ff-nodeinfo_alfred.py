@@ -312,7 +312,7 @@ def fetch(bot, initial=False):
 					if attr.key not in (['lastseen', 'firstseen'] + bot.config.freifunk.get_list('change_no_announce')) and attr.history.has_changes():
 						if attr.key == 'online':
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(
-								formatting.color(str(node.name), formatting.colors.WHITE), 
+								formatting.bold(str(node.name)),
 								formatting.color('online', formatting.colors.GREEN) 
 								if attr.value else formatting.color('offline', formatting.colors.RED)))
 						elif attr.key == 'lat' or attr.key == 'lon':
@@ -332,22 +332,22 @@ def fetch(bot, initial=False):
 								if (old_lat and old_lon and attrs.lat.value and attrs.lon.value):
 									bot.msg(bot.config.freifunk.change_announce_target, 
 										'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}'.format(
-										formatting.color(str(node.name), formatting.colors.WHITE), calc_distance(
+										formatting.bold(str(node.name)), calc_distance(
 											old_lat, old_lon, attrs.lat.value, attrs.lon.value), 
 										bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
 								elif (attrs.lat.value and attrs.lon.value):
 									bot.msg(bot.config.freifunk.change_announce_target, 
 										'Knoten {:s} hat nun eine Position: {:s}'.format(
-										formatting.color(str(node.name), formatting.colors.WHITE), 
+										formatting.bold(str(node.name)),
 										bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
 								else:
 									bot.msg(bot.config.freifunk.change_announce_target, 
 										'Knoten {:s} hat keine Position mehr'.format(
-										formatting.color(str(node.name), formatting.colors.WHITE)))
+										formatting.bold(str(node.name))))
 
 						else:
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
-								formatting.color(str(node.name), formatting.colors.WHITE), 
+								formatting.bold(str(node.name)),
 								str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 		try:
 			session.commit()
