@@ -104,6 +104,12 @@ def announce(bot):
 		if now + timedelta(hours=1) < event.start < now + timedelta(hours=2):
 			bot.msg(bot.config.freifunk.channel, 'Nächster Termin (in {:s}): {:s}'.format(Event.formattimedelta(event.start - now), str(event)))
 
+@event('332')
+@rule('.*')
+def handle_topic_event(bot, topic):
+	bot.memory['topic'][topic.args[1]] = str(topic)
+	print('Initial Topic for {}: {}'.format(topic.args[1], str(topic)))
+
 @event('TOPIC')
 @rule('.*')
 def topic_changed(bot, topic):
