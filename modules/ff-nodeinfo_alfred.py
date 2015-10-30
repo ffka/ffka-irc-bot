@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import inspect, or_
+from sqlalchemy import inspect, or_, and_
 # looks like a scoping problem in willie, so we have to import sqlalchemy instead of func from sqlalchemy!
 #from sqlalchemy import func
 import sqlalchemy
@@ -379,15 +379,28 @@ def check_highscores(bot):
 
 		highscores['nodes'].update(
 			session.query(Node)
-			.filter(or_(Node.gateway == False, Node.gateway == None))
-			.filter(Node.online == True)
-			.count()
-			)
+			.filter(
+				and_(
+					or_(
+						Node.gateway == False,
+						Node.gateway == None
+					),
+					Node.online == True
+				)
+			).count()
+		)
 
 		highscores['clients'].update(
-			session.query(sqlalchemy.func.sum(Node.clientcount))
-			.filter(or_(Node.gateway == False, Node.gateway == None)).scalar()
-			)
+			session.query(sqlalchemy.func.sum(Node.clientcount)).filter(
+				and_(
+					or_(
+						Node.gateway == False,
+						Node.gateway == None
+					),
+					Node.online == True
+				)
+			).scalar()
+		)
 
 		for highscore in highscores.values():
 			session.merge(highscore)
