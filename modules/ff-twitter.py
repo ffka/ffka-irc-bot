@@ -51,7 +51,8 @@ def check_highscore(bot, initial=False):
 
     for highscore in session.query(Highscore):
         if highscore.name not in bot.memory['ff']['last_highscore_dt'] \
-                or bot.memory['ff']['last_highscore_dt'][highscore.name] < highscore.date:
+                or (bot.memory['ff']['last_highscore_dt'][highscore.name]
+                and bot.memory['ff']['last_highscore_dt'][highscore.name] < highscore.date):
             bot.memory['ff']['last_highscore_dt'][highscore.name] = highscore.date
 
             if not initial:
