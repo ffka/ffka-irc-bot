@@ -197,6 +197,16 @@ def status(bot, trigger):
 			)
 		).count()
 
+	nodes_last2w = session.query(Node).filter(
+		and_(
+			or_(
+				Node.gateway == False,
+				Node.gateway == None
+				),
+			datetime.datetime.now() - Node.lastseen < datetime.timedelta(days=14)
+			)
+		).count()
+
 	nodes_online = session.query(Node).filter(
 		and_(
 			or_(
@@ -240,7 +250,7 @@ def status(bot, trigger):
 	session.close()
 
 	bot.say('Online: {:d} Gateways, {:d} Nodes und {:d} Clients, {:.1f}% Nodes bereits migriert'
-		.format(gateways, nodes_online, clients, (100.0 / nodes * nodes_nodes)))
+		.format(gateways, nodes_online, clients, (100.0 / nodes_last2w * nodes_nodes)))
 
 @rate(20)
 @commands('n', 'nodeinfo')
