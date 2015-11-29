@@ -300,7 +300,7 @@ def printNodeinfo(bot, recp, node):
 	if node.lastseen:
 		bot.msg(recp, 'Lastseen:    {}'.format(node.lastseen.strftime('%d.%m.%y %H:%M')))
 	if node.lat and node.lon:
-		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.map_uri.format(lat=node.lat, lon=node.lon)))
+		bot.msg(recp, 'Map:         {}'.format(bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
 	bot.msg(recp, 'Graphana:    http://s.ffka.net/g/{}'.format(re.sub(r"[^a-zA-Z0-9_.-]", '', node.mac.replace(':', ''))))
 
 

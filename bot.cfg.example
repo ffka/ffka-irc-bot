@@ -26,3 +26,4 @@ change_no_announce = clientcount
 change_announce_target = #ffxx-changes
 alfred_uri = link_to_your_alfred_merged.json
 map_uri = http://www.ffka.net/map/geomap.html
+meshviewer_uri = http://s.ffka.net/m/{id:s}
