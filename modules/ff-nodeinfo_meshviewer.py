@@ -116,7 +116,7 @@ class Node(Base):
 				self.firmware_base, self.firmware_release), formatting.colors.PURPLE))
 
 		if self.lat and self.lon:
-			out.append(config.map_uri.format(lat = self.lat, lon = self.lon))
+			out.append(config.meshviewer_uri.format(id=self.node_id))
 
 		return ', '.join(out)
 
