@@ -203,7 +203,7 @@ def status(bot, trigger):
 				Node.gateway == False,
 				Node.gateway == None
 				),
-			datetime.datetime.now() - Node.lastseen < datetime.timedelta(days=14)
+			Node.lastseen > (datetime.datetime.now() -  datetime.timedelta(days=14))
 			)
 		).count()
 
