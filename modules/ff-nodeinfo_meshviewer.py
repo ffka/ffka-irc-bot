@@ -53,7 +53,9 @@ class Node(Base):
 
 			if 'online' in data['flags']:
 				self.online = data['flags']['online']
-				self.lastseen = datetime.datetime.now()
+
+				if data['flags']['online']:
+					self.lastseen = datetime.datetime.now()
 
 		if 'nodeinfo' in data:
 			if 'hardware' in data['nodeinfo']:
