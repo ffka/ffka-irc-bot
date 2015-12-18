@@ -161,6 +161,7 @@ def setup(bot):
 
 	fetch(bot, initial=True)
 
+	bot.memory['initialized'] = True
 def shutdown(bot):
 	global session_maker_instance
 
@@ -335,9 +336,12 @@ def fetch(bot, initial=False):
 		headers['If-Modified-Since'] = bot.memory['ff']['nodes_last_modified']
 
 	try:
-		result = requests.get(bot.config.freifunk.nodes_uri, headers=headers)
+		result = requests.get(bot.config.freifunk.nodes_uri, headers=headers, timeout=5)
+	except requests.exceptions.ConnectTimeout:
+		error(bot, 'Problems requesting nodes.json: Timeout')
+		return
 	except Exception as e:
-		print('Problems requesting nodes.json: {}'.format(str(e)))
+		error(bot, 'Problems requesting nodes.json: {}'.format(type(e)))
 		return
 
 	if result.status_code == 304:
@@ -346,18 +350,24 @@ def fetch(bot, initial=False):
 
 	if result.status_code != 200:
 		# err, we have a problem!
-		print('Unable to get nodes.json! Status code: {:d}'.format(result.status_code))
+		error(bot, 'Unable to get nodes.json! Status code: {:d}'.format(result.status_code))
 		return
 
 	try:
 		mapdata = json.loads(result.text)
 	except ValueError as e:
 		# err, we have a problem!
-		print('Unable to parse JSON! Error: %s' % str(e))
+		error(bot, 'Unable to parse JSON! {}'.format(str(e)))
 		return
 
 	# No problems? Everything fine? Update last modified timestamp!
 	bot.memory['ff']['nodes_last_modified'] = result.headers['Last-Modified']
+
+	# .. and clear last error
+	if bot.memory['ff']['last_error_msg']:
+		bot.memory['ff']['last_error_msg'] = None
+		bot.msg(bot.config.freifunk.change_announce_target,
+				formatting.color('Everything back to normal!', formatting.colors.GREEN))
 
 	session = session_maker_instance()
 
@@ -444,6 +454,15 @@ def fetch(bot, initial=False):
 							str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
 
 	session.close()
+
+def error(bot, msg):
+	print('{}: {}'.format(str(datetime.datetime.now()), msg))
+
+	if 'initialized' in bot.memory:
+		if 'last_error_msg' not in bot.memory['ff'] or bot.memory['ff']['last_error_msg'] != msg:
+			bot.memory['ff']['last_error_msg'] = msg
+			bot.msg(bot.config.freifunk.change_announce_target,
+					formatting.color('{}: {}'.format(formatting.bold('[ERROR]'), msg), formatting.colors.RED))
 
 def check_highscores(bot):
 	global session_maker_instance
