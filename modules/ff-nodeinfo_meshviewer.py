@@ -378,14 +378,28 @@ def fetch(bot, initial=False):
 
 			session.merge(node)
 
+
+		nodes_new = session.new
+		nodes_changed = session.dirty
+
+		try:
+			session.commit()
+		except:
+			session.rollback()
+			raise
+		finally:
+			session.close()
+
 		if not initial:
-			for node in filter(lambda item: type(item) is Node, session.new):
+			for node in filter(lambda item: type(item) is Node, nodes_new):
 				if node.gateway:
 					bot.msg(bot.config.freifunk.channel, 'Neues Gateway: {:s}'.format(str(node)))
 				else:
 					bot.msg(bot.config.freifunk.channel, 'Neuer Knoten: {:s}'.format(str(node)))
 
-			for node in filter(lambda item: type(item) is Node and not node.gateway, session.dirty):
+			check_highscores(bot)
+
+			for node in filter(lambda item: type(item) is Node and not node.gateway, nodes_changed):
 				attrs = inspect(node).attrs
 				location_updated = False
 
@@ -430,16 +444,6 @@ def fetch(bot, initial=False):
 							bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
 								formatting.bold(str(node.name)),
 								str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
-		try:
-			session.commit()
-
-			if not initial:
-				check_highscores(bot)
-		except:
-			session.rollback()
-			raise
-		finally:
-			session.close()
 
 def check_highscores(bot):
 	global session_maker_instance
