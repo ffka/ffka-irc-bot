@@ -442,12 +442,12 @@ def fetch(bot, initial=False):
                                     'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}'.format(
                                     formatting.bold(str(node.name)), calc_distance(
                                         old_lat, old_lon, attrs.lat.value, attrs.lon.value),
-                                    bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
+                                    bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
                             elif (attrs.lat.value and attrs.lon.value):
                                 bot.msg(bot.config.freifunk.change_announce_target,
                                     'Knoten {:s} hat nun eine Position: {:s}'.format(
                                     formatting.bold(str(node.name)),
-                                    bot.config.freifunk.map_uri.format(lat=attrs.lat.value, lon=attrs.lon.value)))
+                                    bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
                             else:
                                 bot.msg(bot.config.freifunk.change_announce_target,
                                     'Knoten {:s} hat keine Position mehr'.format(
