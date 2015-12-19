@@ -366,7 +366,7 @@ def fetch(bot, initial=False):
     bot.memory['ff']['nodes_last_modified'] = result.headers['Last-Modified']
 
     # .. and clear last error
-    if bot.memory['ff']['last_error_msg']:
+    if 'last_error_msg' in bot.memory['ff'] and bot.memory['ff']['last_error_msg']:
         bot.memory['ff']['last_error_msg'] = None
         bot.msg(bot.config.freifunk.change_announce_target,
                 formatting.color('Everything back to normal!', formatting.colors.GREEN))
