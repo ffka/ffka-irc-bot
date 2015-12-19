@@ -342,6 +342,9 @@ def fetch(bot, initial=False):
     except requests.exceptions.ConnectTimeout:
         error(bot, 'Problems requesting nodes.json: Timeout')
         return
+    except requests.exceptions.ConnectionError:
+        error(bot, 'Problems requesting nodes.json: ConnectionError')
+        return
     except Exception as e:
         error(bot, 'Problems requesting nodes.json: {}'.format(type(e)))
         return
