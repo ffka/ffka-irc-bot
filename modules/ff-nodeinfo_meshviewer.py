@@ -388,68 +388,75 @@ def fetch(bot, initial=False):
         nodes_new = filter(lambda item: type(item) is Node, session.new)
         nodes_changed = filter(lambda item: type(item) is Node and not node.gateway, session.dirty)
 
-        try:
-            session.commit()
-        except:
-            session.rollback()
-            raise
+        msgs = {}
+        msgs[bot.config.freifunk.channel] = []
+        msgs[bot.config.freifunk.change_announce_target] = []
 
-    if not initial:
-        for node in nodes_new:
-            if node.gateway:
-                bot.msg(bot.config.freifunk.channel, 'Neues Gateway: {:s}'.format(str(node)))
-            else:
-                bot.msg(bot.config.freifunk.channel, 'Neuer Knoten: {:s}'.format(str(node)))
+        if not initial:
+            for node in nodes_new:
+                if node.gateway:
+                    msgs[bot.config.freifunk.channel].append('Neues Gateway: {:s}'.format(str(node)))
+                else:
+                    msgs[bot.config.freifunk.channel].append('Neuer Knoten: {:s}'.format(str(node)))
 
+            for node in nodes_changed:
+                attrs = inspect(node).attrs
+                location_updated = False
+
+                for attr in attrs:
+                    if attr.key not in (['lastseen'] + bot.config.freifunk.get_list('change_no_announce')) and attr.history.has_changes():
+                        if attr.key == 'online':
+                            msgs[bot.config.freifunk.change_announce_target].append('Knoten {:s} ist nun {:s}'.format(
+                                formatting.bold(str(node.name)),
+                                formatting.color('online', formatting.colors.GREEN)
+                                if attr.value else formatting.color('offline', formatting.colors.RED)))
+                        elif attr.key == 'lat' or attr.key == 'lon':
+                            if not location_updated:
+                                location_updated = True
+
+                                if attrs.lat.history.has_changes():
+                                    old_lat = attrs.lat.history.deleted[0]
+                                else:
+                                    old_lat = attrs.lat.value
+
+                                if attrs.lon.history.has_changes():
+                                    old_lon = attrs.lon.history.deleted[0]
+                                else:
+                                    old_lon = attrs.lon.value
+
+                                if (old_lat and old_lon and attrs.lat.value and attrs.lon.value):
+                                    msgs[bot.config.freifunk.change_announce_target].append(
+                                        'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}'.format(
+                                        formatting.bold(str(node.name)), calc_distance(
+                                            old_lat, old_lon, attrs.lat.value, attrs.lon.value),
+                                        bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
+                                elif (attrs.lat.value and attrs.lon.value):
+                                    msgs[bot.config.freifunk.change_announce_target].append(
+                                        'Knoten {:s} hat nun eine Position: {:s}'.format(
+                                        formatting.bold(str(node.name)),
+                                        bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
+                                else:
+                                    msgs[bot.config.freifunk.change_announce_target].append(
+                                        'Knoten {:s} hat keine Position mehr'.format(
+                                        formatting.bold(str(node.name))))
+
+                        else:
+                           msgs[bot.config.freifunk.change_announce_target].append('Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
+                                formatting.bold(str(node.name)),
+                                str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
+    try:
+        session.commit()
         check_highscores(bot)
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
-        for node in nodes_changed:
-            attrs = inspect(node).attrs
-            location_updated = False
 
-            for attr in attrs:
-                if attr.key not in (['lastseen'] + bot.config.freifunk.get_list('change_no_announce')) and attr.history.has_changes():
-                    if attr.key == 'online':
-                        bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} ist nun {:s}'.format(
-                            formatting.bold(str(node.name)),
-                            formatting.color('online', formatting.colors.GREEN)
-                            if attr.value else formatting.color('offline', formatting.colors.RED)))
-                    elif attr.key == 'lat' or attr.key == 'lon':
-                        if not location_updated:
-                            location_updated = True
-
-                            if attrs.lat.history.has_changes():
-                                old_lat = attrs.lat.history.deleted[0]
-                            else:
-                                old_lat = attrs.lat.value
-
-                            if attrs.lon.history.has_changes():
-                                old_lon = attrs.lon.history.deleted[0]
-                            else:
-                                old_lon = attrs.lon.value
-
-                            if (old_lat and old_lon and attrs.lat.value and attrs.lon.value):
-                                bot.msg(bot.config.freifunk.change_announce_target,
-                                    'Knoten {:s} änderte seine Position um {:.0f} Meter: {:s}'.format(
-                                    formatting.bold(str(node.name)), calc_distance(
-                                        old_lat, old_lon, attrs.lat.value, attrs.lon.value),
-                                    bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
-                            elif (attrs.lat.value and attrs.lon.value):
-                                bot.msg(bot.config.freifunk.change_announce_target,
-                                    'Knoten {:s} hat nun eine Position: {:s}'.format(
-                                    formatting.bold(str(node.name)),
-                                    bot.config.freifunk.meshviewer_uri.format(id=node.node_id)))
-                            else:
-                                bot.msg(bot.config.freifunk.change_announce_target,
-                                    'Knoten {:s} hat keine Position mehr'.format(
-                                    formatting.bold(str(node.name))))
-
-                    else:
-                        bot.msg(bot.config.freifunk.change_announce_target, 'Knoten {:s} änderte {:s} von {:s} zu {:s}'.format(
-                            formatting.bold(str(node.name)),
-                            str(attr.key), str(attr.history.deleted[0]), str(attr.value)))
-
-    session.close()
+    for target in msgs:
+        for msg in msgs[target]:
+            bot.msg(target, msg)
 
 def error(bot, msg):
     print('{}: {}'.format(str(datetime.datetime.now()), msg))
