@@ -162,6 +162,7 @@ def setup(bot):
     fetch(bot, initial=True)
 
     bot.memory['initialized'] = True
+
 def shutdown(bot):
     global session_maker_instance
 
@@ -217,16 +218,6 @@ def status(bot, trigger):
                 Node.gateway == None
                 ),
             Node.online == True
-            )
-        ).count()
-
-    nodes_alfred = session.query(Node).filter(
-        and_(
-            or_(
-                Node.gateway == False,
-                Node.gateway == None
-                ),
-            Node.source == 'alfred.json',
             )
         ).count()
 
