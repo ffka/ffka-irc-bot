@@ -228,6 +228,7 @@ def status(bot, trigger):
                 Node.gateway == None
                 ),
             Node.source == 'nodes.json',
+            Node.lastseen > (datetime.datetime.now() -  datetime.timedelta(days=14))
             )
         ).count()
 
