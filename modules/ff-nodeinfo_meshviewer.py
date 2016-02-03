@@ -90,6 +90,11 @@ class Node(Base):
                     if 'release' in data['nodeinfo']['software']['firmware']:
                         self.firmware_release = data['nodeinfo']['software']['firmware']['release']
 
+            self.site_code = None
+            if 'system' in data['nodeinfo']:
+                if 'site_code' in data['nodeinfo']['system']:
+                    self.site_code = data['nodeinfo']['system']['site_code']
+
         if 'statistics' in data:
             if self.online and 'clients' in data['statistics']:
                 self.clientcount = data['statistics']['clients']
@@ -375,13 +380,13 @@ def fetch(bot, initial=False):
             node.clientcount = 0
 
         for key, data in mapdata['nodes'].items():
-            # node appears in both, alfred.json and nodes.json. tempfix untill meshviever backend is reseted.
-            if key == 'c04a00e44ab6':
-                continue
             data['node_id'] = key
             data['source'] = 'nodes.json'
 
             node = Node(data)
+
+            if not (node.site_code and node.site_code == 'ffka'):
+                continue
 
             session.merge(node)
 
