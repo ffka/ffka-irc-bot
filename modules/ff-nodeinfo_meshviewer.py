@@ -400,6 +400,7 @@ def fetch(bot, initial=False):
 
         if not initial:
             for node in nodes_new:
+                node.firstseen = datetime.datetime.now()
                 if node.gateway:
                     msgs[bot.config.freifunk.channel].append('Neues Gateway: {:s}'.format(str(node)))
                 else:
