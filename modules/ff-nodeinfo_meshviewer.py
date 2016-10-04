@@ -199,6 +199,7 @@ def status(bot, trigger):
             )
         ).count()
 
+    '''
     nodes = session.query(Node).filter(
         or_(
             Node.gateway == False,
@@ -215,6 +216,7 @@ def status(bot, trigger):
             Node.lastseen > (datetime.datetime.now() -  datetime.timedelta(days=14))
             )
         ).count()
+    '''
 
     nodes_online = session.query(Node).filter(
         and_(
@@ -226,6 +228,7 @@ def status(bot, trigger):
             )
         ).count()
 
+    '''
     nodes_nodes = session.query(Node).filter(
         and_(
             or_(
@@ -236,6 +239,7 @@ def status(bot, trigger):
             Node.lastseen > (datetime.datetime.now() -  datetime.timedelta(days=14))
             )
         ).count()
+    '''
 
     clients = session.query(sqlalchemy.func.sum(Node.clientcount)).filter(
         and_(
@@ -249,8 +253,8 @@ def status(bot, trigger):
 
     session.close()
 
-    bot.say('Online: {:d} Gateways, {:d} Nodes und {:d} Clients, {:.1f}% Nodes bereits migriert'
-        .format(gateways, nodes_online, clients, (100.0 / nodes_last2w * nodes_nodes)))
+    bot.say('Online: {:d} Gateways, {:d} Nodes und {:d} Clients'
+        .format(gateways, nodes_online, clients))
 
 @rate(20)
 @commands('n', 'nodeinfo')
